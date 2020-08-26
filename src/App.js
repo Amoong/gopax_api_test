@@ -1,4 +1,5 @@
 import React from "react";
+import CoinList from "./components/CoinList";
 import "./App.css";
 
 function App() {
@@ -7,7 +8,9 @@ function App() {
       <header className="App-header">
         <p>GOPAX API TEST</p>
       </header>
-      <main className="App-main">this is main</main>
+      <main className="App-main">
+        <CoinList />
+      </main>
     </div>
   );
 }
