@@ -36,7 +36,7 @@ test("get coin infos", function _callee2() {
 
         case 2:
           result = _context2.sent;
-          expect(result).toBeTruthy();
+          expect(result).not.toBeFalsy();
 
         case 4:
         case "end":
@@ -44,4 +44,26 @@ test("get coin infos", function _callee2() {
       }
     }
   });
+});
+test("classify coin info by name", function () {
+  var result = coinList.classifyCoinInfos([{
+    name: "ETH-KRW"
+  }, {
+    name: "BTCHG-KRW"
+  }, {
+    name: "BTCBULL-KRW"
+  }, {
+    name: "BTCBEAR-KRW"
+  }, {
+    name: "XLM-BTC"
+  }]);
+  expect(result).toStrictEqual({
+    lengthKRW: 1,
+    lengthPRO: 3,
+    lengthBTC: 1
+  });
+});
+test("slice coin name by Hyphen", function () {
+  var result = coinList.sliceNameByHyphen("ETH-KRW");
+  expect(result).toBe("ETH");
 });
