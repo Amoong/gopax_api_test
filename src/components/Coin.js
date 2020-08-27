@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-function Movie({ name, id, close, contrast, high, low, volume }) {
+function Coin({ name, id, close, contrast, high, low, volume }) {
   return (
     <tr>
       <th>🤍</th>
@@ -15,4 +15,14 @@ function Movie({ name, id, close, contrast, high, low, volume }) {
   );
 }
 
-export default Movie;
+Coin.prototype = {
+  name: PropTypes.string.isRequired,
+  id: PropTypes.string.isRequired,
+  close: PropTypes.number.isRequired,
+  contrast: PropTypes.number.isRequired,
+  high: PropTypes.number.isRequired,
+  low: PropTypes.number.isRequired,
+  volume: PropTypes.number.isRequired
+};
+
+export default Coin;

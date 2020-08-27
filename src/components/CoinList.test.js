@@ -5,7 +5,7 @@ const coinList = new CoinList();
 // getCoinNames
 test("get coin names", async () => {
   const result = await coinList.getCoinNames();
-  expect(result).toBeTruthy();
+  expect(result).not.toBeFalsy();
 });
 
 // getCoinInfos
@@ -23,10 +23,15 @@ test("classify coin info by name", () => {
     { name: "BTCBEAR-KRW" },
     { name: "XLM-BTC" }
   ]);
+
   expect(result).toStrictEqual({
-    lengthKRW: 1,
-    lengthPRO: 3,
-    lengthBTC: 1
+    infosKRW: [{ id: "ETH/KRW", name: "" }],
+    infosPRO: [
+      { id: "BTCHG/KRW", name: "" },
+      { id: "BTCBULL/KRW", name: "" },
+      { id: "BTCBEAR/KRW", name: "" }
+    ],
+    infosBTC: [{ id: "XLM/BTC", name: "" }]
   });
 });
 
@@ -38,7 +43,26 @@ test("slice coin id by Hyphen", () => {
 
 // findKoreanName
 test("get Korean name from coin name list by coin id", async () => {
-  await coinList.getCoinNames();
+  coinList.state = {
+    names: [
+      {
+        id: "KRW",
+        name: "대한민국 원"
+      },
+      {
+        id: "ETH",
+        name: "이더리움"
+      },
+      {
+        id: "BTC",
+        name: "비트코인"
+      },
+      {
+        id: "BCH",
+        name: "비트코인 캐시"
+      }
+    ]
+  };
   const result = coinList.findKoreanName("BCH");
   expect(result).toBe("비트코인 캐시");
 });

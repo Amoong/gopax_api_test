@@ -5,21 +5,27 @@ const proxyurl = "https://cors-anywhere.herokuapp.com/";
 const baseurl = "https://api.gopax.co.kr";
 
 class CoinList extends React.Component {
-  state = {
-    isNamesLoading: true,
-    isInfosLoading: true,
-    names: [],
-    infosKRW: [],
-    infosPRO: [],
-    infosBTC: []
-  };
+  state = {};
+
+  constructor() {
+    super();
+    this.state = {
+      isNamesLoading: true,
+      isInfosLoading: true,
+      names: [],
+      infos: [],
+      infosKRW: [],
+      infosPRO: [],
+      infosBTC: [],
+      some: ""
+    };
+  }
   async getCoinNames() {
     const url = `${proxyurl}${baseurl}/assets`; // site that doesn’t send Access-Control-*
     try {
       const res = await fetch(url);
       if (!res.ok) return false;
-      this.setState({ names: await res.json(), isNamesLoading: false });
-      return true;
+      return { names: await res.json(), isNamesLoading: false };
     } catch (error) {
       console.log(error);
       return false;
@@ -30,8 +36,7 @@ class CoinList extends React.Component {
     try {
       const res = await fetch(url);
       if (!res.ok) return false;
-      this.setState({ isInfosLoading: false });
-      return await res.json();
+      return { infos: await res.json(), isInfosLoading: false };
     } catch (error) {
       console.log(error);
       return false;
@@ -55,13 +60,7 @@ class CoinList extends React.Component {
       }
     });
 
-    this.setState({ infosKRW, infosPRO, infosBTC });
-
-    return {
-      lengthKRW: infosKRW.length,
-      lengthPRO: infosPRO.length,
-      lengthBTC: infosBTC.length
-    };
+    return { infosKRW, infosPRO, infosBTC };
   }
   wrapCoinInfo(info) {
     const id = info.name;
@@ -82,8 +81,9 @@ class CoinList extends React.Component {
     return id.slice(0, id.indexOf("-"));
   }
   async componentDidMount() {
-    await this.getCoinNames();
-    this.classifyCoinInfos(await this.getCoinInfos());
+    this.setState(await this.getCoinNames());
+    this.setState(await this.getCoinInfos());
+    this.setState(this.classifyCoinInfos(this.state.infos));
   }
   render() {
     const { infosKRW, isInfosLoading, isNamesLoading } = this.state;
