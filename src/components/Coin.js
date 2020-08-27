@@ -1,16 +1,31 @@
 import React from "react";
 import PropTypes from "prop-types";
-
-function Coin({ name, id, close, contrast, high, low, volume }) {
+import "./Coin.css";
+function Coin({
+  name,
+  id,
+  close,
+  contrast,
+  contrastPoint,
+  high,
+  low,
+  tradingValue
+}) {
   return (
     <tr>
       <th>🤍</th>
-      <th>{name}</th>
+      <th>
+        <div>{name}</div>
+        <div>{id}</div>
+      </th>
       <th>{close}</th>
-      <th>{contrast}</th>
+      <th>
+        <div>{contrastPoint}%</div>
+        <div>{contrast}</div>
+      </th>
       <th>{high}</th>
       <th>{low}</th>
-      <th>{volume}</th>
+      <th>{tradingValue}</th>
     </tr>
   );
 }
@@ -18,11 +33,11 @@ function Coin({ name, id, close, contrast, high, low, volume }) {
 Coin.prototype = {
   name: PropTypes.string.isRequired,
   id: PropTypes.string.isRequired,
-  close: PropTypes.number.isRequired,
-  contrast: PropTypes.number.isRequired,
-  high: PropTypes.number.isRequired,
-  low: PropTypes.number.isRequired,
-  volume: PropTypes.number.isRequired
+  close: PropTypes.string.isRequired,
+  contrast: PropTypes.string.isRequired,
+  high: PropTypes.string.isRequired,
+  low: PropTypes.string.isRequired,
+  tradingValue: PropTypes.number.isRequired
 };
 
 export default Coin;

@@ -16,7 +16,7 @@ test("get coin infos", async () => {
 
 // classifyCoinInfos
 test("classify coin info by name", () => {
-  const result = coinList.classifyCoinInfos([
+  const result = coinList.classifyCoinInfosById([
     { name: "ETH-KRW" },
     { name: "BTCHG-KRW" },
     { name: "BTCBULL-KRW" },
