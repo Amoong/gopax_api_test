@@ -1,11 +1,13 @@
 import React from "react";
+import Coin from "./Coin";
 
 const proxyurl = "https://cors-anywhere.herokuapp.com/";
 const baseurl = "https://api.gopax.co.kr";
 
 class CoinList extends React.Component {
   state = {
-    isLoading: true,
+    isNamesLoading: true,
+    isInfosLoading: true,
     names: [],
     infosKRW: [],
     infosPRO: [],
@@ -16,7 +18,7 @@ class CoinList extends React.Component {
     try {
       const res = await fetch(url);
       if (!res.ok) return false;
-      this.state = { names: await res.json() };
+      this.setState({ names: await res.json(), isNamesLoading: false });
       return true;
     } catch (error) {
       console.log(error);
@@ -28,12 +30,14 @@ class CoinList extends React.Component {
     try {
       const res = await fetch(url);
       if (!res.ok) return false;
+      this.setState({ isInfosLoading: false });
       return await res.json();
     } catch (error) {
       console.log(error);
       return false;
     }
   }
+  getCoinNameById() {}
   classifyCoinInfos(infos) {
     if (!infos) return false;
 
@@ -41,16 +45,13 @@ class CoinList extends React.Component {
     const infosPRO = [];
     const infosBTC = [];
     infos.forEach(info => {
-      const name = info.name;
-      if (/BULL|BEAR|HG/.test(name)) {
-        info.name = this.sliceNameByHyphen(name);
-        infosPRO.push(info);
-      } else if (/KRW$/.test(name)) {
-        info.name = this.sliceNameByHyphen(name);
-        infosKRW.push(info);
-      } else if (/BTC$/.test(name)) {
-        info.name = this.sliceNameByHyphen(name);
-        infosBTC.push(info);
+      const id = info.name;
+      if (/BULL|BEAR|HG/.test(id)) {
+        infosPRO.push(this.wrapCoinInfo(info));
+      } else if (/KRW$/.test(id)) {
+        infosKRW.push(this.wrapCoinInfo(info));
+      } else if (/BTC$/.test(id)) {
+        infosBTC.push(this.wrapCoinInfo(info));
       }
     });
 
@@ -62,16 +63,70 @@ class CoinList extends React.Component {
       lengthBTC: infosBTC.length
     };
   }
-  sliceNameByHyphen(name) {
-    return name.slice(0, name.indexOf("-"));
+  wrapCoinInfo(info) {
+    const id = info.name;
+    info.id = id.replace("-", "/");
+    info.name = this.findKoreanName(this.sliceIdByHyphen(id));
+    return info;
+  }
+  findKoreanName(id) {
+    const { names } = this.state;
+    for (let i = 0; i < names.length; i++) {
+      if (names[i].id === id) {
+        return names[i].name;
+      }
+    }
+    return "";
+  }
+  sliceIdByHyphen(id) {
+    return id.slice(0, id.indexOf("-"));
   }
   async componentDidMount() {
-    this.getCoinNames();
+    await this.getCoinNames();
     this.classifyCoinInfos(await this.getCoinInfos());
-    console.log(this.state.infosPRO);
   }
   render() {
-    return <div className="coinlist">this is coinlist</div>;
+    const { infosKRW, isInfosLoading, isNamesLoading } = this.state;
+
+    return (
+      <div className="container">
+        {isInfosLoading || isNamesLoading ? (
+          <div className="loader">
+            <span className="loader__text">Loading...</span>
+          </div>
+        ) : (
+          <div className="coins">
+            <table className="coins__table">
+              <thead className="coins__thead">
+                <tr>
+                  <th className="th__interest"></th>
+                  <th className="th__name">이름</th>
+                  <th className="th__cur">현재가</th>
+                  <th className="th__contrast">변동</th>
+                  <th className="th__high">최고가</th>
+                  <th className="th__low">최저가</th>
+                  <th className="th__trading-value">거래대금</th>
+                </tr>
+              </thead>
+              <tbody>
+                {infosKRW.map(info => (
+                  <Coin
+                    key={info.id}
+                    name={info.name}
+                    id={info.id}
+                    close={info.close}
+                    contrast={info.close}
+                    high={info.high}
+                    low={info.low}
+                    volume={info.volume}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
   }
 }
 
