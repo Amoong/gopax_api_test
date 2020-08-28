@@ -63,7 +63,6 @@ class CoinList extends React.Component {
       } else if (/KRW$/.test(id)) {
         if (id === "BTC-KRW") {
           this.setState({ BTC_KRW: info.close });
-          console.log(this.state.BTC_KRW);
         }
         infosKRW.push(this.wrapCoinInfo(info));
       } else if (/BTC$/.test(id)) {
