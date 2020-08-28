@@ -5,6 +5,10 @@ const proxyurl = "https://cors-anywhere.herokuapp.com/";
 const baseurl = "https://api.gopax.co.kr";
 
 class CoinList extends React.Component {
+  constructor() {
+    super();
+    this.selectInfo = this.selectInfo.bind(this);
+  }
   state = {
     isNamesLoading: true,
     isInfosLoading: true,
@@ -12,7 +16,9 @@ class CoinList extends React.Component {
     infos: [],
     infosKRW: [],
     infosPRO: [],
-    infosBTC: []
+    infosBTC: [],
+    selectedInfo: [],
+    sortDirection: -1
   };
   async getCoinNames() {
     const url = `${proxyurl}${baseurl}/assets`; // site that doesn’t send Access-Control-*
@@ -56,13 +62,22 @@ class CoinList extends React.Component {
     return { infosKRW, infosPRO, infosBTC };
   }
   numberWithCommas(x) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return Math.abs(x) > 1
+      ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+      : x.toString();
   }
   wrapCoinInfo(info) {
     const id = info.name;
     info.name = this.findKoreanName(this.sliceIdByHyphen(id));
     info.id = id.replace("-", "/");
-    info.contrast = parseInt(info.close - info.open);
+    if (id === "BCH-BTC") {
+      console.log(info.close, info.open);
+    }
+    // info.contrast = Math.round((info.close - info.open) * 1e12) / 1e12;
+    info.contrast = (info.close - info.open).toFixed(0);
+    if (id === "BCH-BTC") {
+      console.log(info.contrast);
+    }
     info.contrastPoint =
       info.close !== 0 ? ((info.contrast / info.close) * 100).toFixed(2) : 0;
     info.tradingValue = (((info.low + info.high) / 2) * info.volume).toFixed(0);
@@ -84,9 +99,9 @@ class CoinList extends React.Component {
     const million = 1000000;
     const tenThousand = 10000;
     if (tradingValue > million) {
-      return parseInt(tradingValue / million).toString() + "백만";
+      return parseInt(tradingValue / million, 10).toString() + "백만";
     } else if (tradingValue > tenThousand) {
-      return parseInt(tradingValue / tenThousand).toString() + "만";
+      return parseInt(tradingValue / tenThousand, 10).toString() + "만";
     }
     return tradingValue.toString();
   }
@@ -107,14 +122,25 @@ class CoinList extends React.Component {
 
     this.setState({ infosKRW, infosPRO, infosBTC });
   }
+  selectInfo(info) {
+    this.setState({ selectedInfo: info });
+  }
   async componentDidMount() {
     this.setState(await this.getCoinNames());
     this.setState(await this.getCoinInfos());
     this.setState(this.classifyCoinInfosById(this.state.infos));
-    this.sortByTradingValue(-1);
+    this.sortByTradingValue(this.state.sortDirection);
+    this.selectInfo(this.state.infosKRW);
   }
   render() {
-    const { infosKRW, isInfosLoading, isNamesLoading } = this.state;
+    const {
+      selectedInfo,
+      isInfosLoading,
+      isNamesLoading,
+      infosKRW,
+      infosPRO,
+      infosBTC
+    } = this.state;
 
     return (
       <div className="container">
@@ -124,6 +150,11 @@ class CoinList extends React.Component {
           </div>
         ) : (
           <div className="coins">
+            <div className="buttons">
+              <button onClick={() => this.selectInfo(infosKRW)}>KRW</button>
+              <button onClick={() => this.selectInfo(infosPRO)}>PRO</button>
+              <button onClick={() => this.selectInfo(infosBTC)}>BTC</button>
+            </div>
             <table className="coins__table">
               <thead className="coins__thead">
                 <tr>
@@ -137,7 +168,7 @@ class CoinList extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {infosKRW.map(info => (
+                {selectedInfo.map(info => (
                   <Coin
                     key={info.id}
                     name={info.name}
