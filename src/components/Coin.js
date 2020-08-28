@@ -5,6 +5,7 @@ function Coin({
   name,
   id,
   close,
+  BTC_KRW,
   contrast,
   contrastPoint,
   high,
@@ -18,7 +19,10 @@ function Coin({
         <div>{name}</div>
         <div>{id}</div>
       </th>
-      <th>{close}</th>
+      <th>
+        <div>{close}</div>
+        <div>{BTC_KRW !== undefined ? `${BTC_KRW}KRW` : undefined}</div>
+      </th>
       <th>
         <div>{contrastPoint}%</div>
         <div>{contrast}</div>

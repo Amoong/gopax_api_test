@@ -25,7 +25,8 @@ class CoinList extends React.Component {
     infosBTC: [],
     selectedInfo: [],
     curCoinType: "KRW",
-    searchKey: ""
+    searchKey: "",
+    BTC_KRW: 1
   };
   async getCoinNames() {
     const url = `${proxyurl}${baseurl}/assets`; // site that doesn’t send Access-Control-*
@@ -60,20 +61,31 @@ class CoinList extends React.Component {
       if (/BULL|BEAR|HG/.test(id)) {
         infosPRO.push(this.wrapCoinInfo(info));
       } else if (/KRW$/.test(id)) {
+        if (id === "BTC-KRW") {
+          this.setState({ BTC_KRW: info.close });
+          console.log(this.state.BTC_KRW);
+        }
         infosKRW.push(this.wrapCoinInfo(info));
       } else if (/BTC$/.test(id)) {
-        infosBTC.push(this.wrapCoinInfo(info));
+        infosBTC.push(this.wrapCoinInfo(info, true));
       }
     });
 
     return { infosKRW, infosPRO, infosBTC };
   }
   numberWithCommas(x) {
+    if (x === undefined) return;
     return Math.abs(x) > 1
       ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
       : x.toString();
   }
-  wrapCoinInfo(info) {
+  isFloat(n) {
+    return Number(n) === n && n % 1 !== 0;
+  }
+  wrapFloatNumber(n) {
+    return this.isFloat(n * 1e6) ? n.toFixed(8) : n;
+  }
+  wrapCoinInfo(info, isBTC) {
     const id = info.name;
     info.name = this.findKoreanName(this.sliceIdByHyphen(id));
     info.id = id.replace("-", "/");
@@ -82,7 +94,14 @@ class CoinList extends React.Component {
       info.close !== 0 ? ((info.contrast / info.close) * 100).toFixed(2) : 0;
     info.tradingValue = (((info.low + info.high) / 2) * info.volume).toFixed(0);
 
-    info.close = info.close < 1 ? info.close.toFixed(8) : info.close;
+    info.close = this.wrapFloatNumber(info.close);
+    info.high = this.wrapFloatNumber(info.high);
+    info.low = this.wrapFloatNumber(info.low);
+
+    if (isBTC) {
+      info.BTC_KRW = Math.floor(info.close * this.state.BTC_KRW);
+    }
+
     return info;
   }
   findKoreanName(id) {
@@ -341,6 +360,7 @@ class CoinList extends React.Component {
                       name={info.name}
                       id={info.id}
                       close={this.numberWithCommas(info.close)}
+                      BTC_KRW={this.numberWithCommas(info.BTC_KRW)}
                       contrast={this.numberWithCommas(info.contrast)}
                       contrastPoint={info.contrastPoint}
                       high={this.numberWithCommas(info.high)}
