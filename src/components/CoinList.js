@@ -12,6 +12,8 @@ class CoinList extends React.Component {
     this.clickKRW = this.clickKRW.bind(this);
     this.clickPRO = this.clickPRO.bind(this);
     this.clickBTC = this.clickBTC.bind(this);
+    this.prevSortStrategy = () => {};
+    this.isDesc = true;
   }
   state = {
     isNamesLoading: true,
@@ -22,7 +24,7 @@ class CoinList extends React.Component {
     infosPRO: [],
     infosBTC: [],
     selectedInfo: [],
-    sortDirection: -1
+    curCoinType: "KRW"
   };
   async getCoinNames() {
     const url = `${proxyurl}${baseurl}/assets`; // site that doesn’t send Access-Control-*
@@ -74,14 +76,7 @@ class CoinList extends React.Component {
     const id = info.name;
     info.name = this.findKoreanName(this.sliceIdByHyphen(id));
     info.id = id.replace("-", "/");
-    if (id === "BCH-BTC") {
-      console.log(info.close, info.open);
-    }
-    // info.contrast = Math.round((info.close - info.open) * 1e12) / 1e12;
     info.contrast = (info.close - info.open).toFixed(0);
-    if (id === "BCH-BTC") {
-      console.log(info.contrast);
-    }
     info.contrastPoint =
       info.close !== 0 ? ((info.contrast / info.close) * 100).toFixed(2) : 0;
     info.tradingValue = (((info.low + info.high) / 2) * info.volume).toFixed(0);
@@ -109,22 +104,52 @@ class CoinList extends React.Component {
     }
     return tradingValue.toString();
   }
-  sortByTradingValue(direction) {
-    // 고팍스는 정렬시 다른 거래쌍도 같이 정렬함
+  sortByTradingValue(a, b) {
+    return a.tradingValue - b.tradingValue;
+  }
+  sortByClose(a, b) {
+    return a.close - b.close;
+  }
+  sortByContrast(a, b) {
+    return a.contrastPoint - b.contrastPoint;
+  }
+  sortByHigh(a, b) {
+    return a.high - b.high;
+  }
+  sortByLow(a, b) {
+    return a.Low - b.Low;
+  }
+  sortByName(a, b) {
+    const nameA = a.name.toUpperCase();
+    const nameB = b.name.toUpperCase();
+
+    if (nameA < nameB) {
+      return -1;
+    } else if (nameA > nameB) {
+      return 1;
+    }
+
+    return 0;
+  }
+  sortInfos(sortStrategy) {
     const { infosKRW, infosPRO, infosBTC } = this.state;
-    infosKRW.sort((a, b) => {
-      return (a.tradingValue - b.tradingValue) * direction;
-    });
 
-    infosPRO.sort((a, b) => {
-      return (a.tradingValue - b.tradingValue) * direction;
-    });
+    infosKRW.sort(sortStrategy);
+    infosPRO.sort(sortStrategy);
+    infosBTC.sort(sortStrategy);
 
-    infosBTC.sort((a, b) => {
-      return (a.tradingValue - b.tradingValue) * direction;
-    });
+    if (this.isDesc) {
+      infosKRW.reverse();
+      infosPRO.reverse();
+      infosBTC.reverse();
+    }
 
-    this.setState({ infosKRW, infosPRO, infosBTC });
+    this.prevSortStrategy = sortStrategy;
+    this.setState({
+      infosKRW,
+      infosPRO,
+      infosBTC
+    });
   }
   selectInfo(info) {
     this.setState({ selectedInfo: info });
@@ -135,6 +160,7 @@ class CoinList extends React.Component {
       button.classList.remove("selected");
     });
     document.querySelector(".button__KRW").classList.add("selected");
+    this.setState({ curCoinType: "KRW" });
     this.selectInfo(this.state.infosKRW);
   }
   clickPRO() {
@@ -143,6 +169,7 @@ class CoinList extends React.Component {
       button.classList.remove("selected");
     });
     document.querySelector(".button__PRO").classList.add("selected");
+    this.setState({ curCoinType: "PRO" });
     this.selectInfo(this.state.infosPRO);
   }
   clickBTC() {
@@ -151,14 +178,38 @@ class CoinList extends React.Component {
       button.classList.remove("selected");
     });
     document.querySelector(".button__BTC").classList.add("selected");
+    this.setState({ curCoinType: "BTC" });
     this.selectInfo(this.state.infosBTC);
+  }
+  async updateCoinData() {
+    this.setState(await this.getCoinInfos());
+    this.setState(this.classifyCoinInfosById(this.state.infos));
+    switch (this.state.curCoinType) {
+      case "KRW":
+        this.selectInfo(this.state.infosKRW);
+        break;
+      case "PRO":
+        this.selectInfo(this.state.infosPRO);
+        break;
+      case "BTC":
+        this.selectInfo(this.state.infosBTC);
+        break;
+      default:
+        break;
+    }
+
+    this.sortInfos(this.prevSortStrategy);
+    console.log(this.state.infosKRW[1].close);
   }
   async componentDidMount() {
     this.setState(await this.getCoinNames());
     this.setState(await this.getCoinInfos());
     this.setState(this.classifyCoinInfosById(this.state.infos));
-    this.sortByTradingValue(this.state.sortDirection);
-    this.selectInfo(this.state.infosKRW);
+    this.sortInfos(this.sortByTradingValue);
+    this.clickKRW();
+    setInterval(() => {
+      this.updateCoinData();
+    }, 10000);
   }
   render() {
     const { selectedInfo, isInfosLoading, isNamesLoading } = this.state;
@@ -196,22 +247,64 @@ class CoinList extends React.Component {
                 <tr>
                   <th className="th__interest"></th>
                   <th className="th__name">
-                    <button>이름</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByName);
+                      }}
+                    >
+                      이름
+                    </button>
                   </th>
                   <th className="th__cur">
-                    <button>현재가</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByClose);
+                      }}
+                    >
+                      현재가
+                    </button>
                   </th>
                   <th className="th__contrast">
-                    <button>변동</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByContrast);
+                      }}
+                    >
+                      변동
+                    </button>
                   </th>
                   <th className="th__high">
-                    <button>최고가</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByHigh);
+                      }}
+                    >
+                      최고가
+                    </button>
                   </th>
                   <th className="th__low">
-                    <button>최저가</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByLow);
+                      }}
+                    >
+                      최저가
+                    </button>
                   </th>
                   <th className="th__trading-value">
-                    <button>거래대금</button>
+                    <button
+                      onClick={() => {
+                        this.isDesc = !this.isDesc;
+                        this.sortInfos(this.sortByTradingValue);
+                      }}
+                    >
+                      거래대금
+                    </button>
                   </th>
                 </tr>
               </thead>
