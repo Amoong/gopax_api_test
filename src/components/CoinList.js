@@ -139,7 +139,7 @@ class CoinList extends React.Component {
     return a.high - b.high;
   }
   sortByLow(a, b) {
-    return a.Low - b.Low;
+    return a.low - b.low;
   }
   sortByName(a, b) {
     const nameA = a.name.toUpperCase();
@@ -154,6 +154,8 @@ class CoinList extends React.Component {
     return 0;
   }
   sortInfos(sortStrategy) {
+    this.prevSortStrategy = sortStrategy;
+
     const { infosKRW, infosPRO, infosBTC } = this.state;
 
     infosKRW.sort(sortStrategy);
@@ -166,7 +168,6 @@ class CoinList extends React.Component {
       infosBTC.reverse();
     }
 
-    this.prevSortStrategy = sortStrategy;
     this.setState({
       infosKRW,
       infosPRO,
@@ -224,7 +225,6 @@ class CoinList extends React.Component {
     }
 
     this.sortInfos(this.prevSortStrategy);
-    console.log(this.state.infosKRW[1].close);
   }
   async componentDidMount() {
     this.setState(await this.getCoinNames());
