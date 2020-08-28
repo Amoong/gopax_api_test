@@ -24,7 +24,8 @@ class CoinList extends React.Component {
     infosPRO: [],
     infosBTC: [],
     selectedInfo: [],
-    curCoinType: "KRW"
+    curCoinType: "KRW",
+    searchKey: ""
   };
   async getCoinNames() {
     const url = `${proxyurl}${baseurl}/assets`; // site that doesn’t send Access-Control-*
@@ -80,6 +81,8 @@ class CoinList extends React.Component {
     info.contrastPoint =
       info.close !== 0 ? ((info.contrast / info.close) * 100).toFixed(2) : 0;
     info.tradingValue = (((info.low + info.high) / 2) * info.volume).toFixed(0);
+
+    info.close = info.close < 1 ? info.close.toFixed(8) : info.close;
     return info;
   }
   findKoreanName(id) {
@@ -181,6 +184,9 @@ class CoinList extends React.Component {
     this.setState({ curCoinType: "BTC" });
     this.selectInfo(this.state.infosBTC);
   }
+  handleChange = e => {
+    this.setState({ searchKey: e.target.value });
+  };
   async updateCoinData() {
     this.setState(await this.getCoinInfos());
     this.setState(this.classifyCoinInfosById(this.state.infos));
@@ -207,12 +213,17 @@ class CoinList extends React.Component {
     this.setState(this.classifyCoinInfosById(this.state.infos));
     this.sortInfos(this.sortByTradingValue);
     this.clickKRW();
-    setInterval(() => {
-      this.updateCoinData();
-    }, 10000);
+    // setInterval(() => {
+    //   this.updateCoinData();
+    // }, 10000);
   }
   render() {
-    const { selectedInfo, isInfosLoading, isNamesLoading } = this.state;
+    const {
+      selectedInfo,
+      isInfosLoading,
+      isNamesLoading,
+      searchKey
+    } = this.state;
 
     return (
       <div className="container">
@@ -222,26 +233,34 @@ class CoinList extends React.Component {
           </div>
         ) : (
           <div className="coins">
-            <div className="buttons">
-              <button
-                className="button__select-infos button__KRW"
-                onClick={this.clickKRW}
-              >
-                KRW
-              </button>
-              <button
-                className="button__select-infos button__PRO"
-                onClick={this.clickPRO}
-              >
-                PRO
-              </button>
-              <button
-                className="button__select-infos button__BTC"
-                onClick={this.clickBTC}
-              >
-                BTC
-              </button>
+            <div className="coins__header">
+              <div className="buttons">
+                <button
+                  className="button__select-infos button__KRW"
+                  onClick={this.clickKRW}
+                >
+                  KRW
+                </button>
+                <button
+                  className="button__select-infos button__PRO"
+                  onClick={this.clickPRO}
+                >
+                  PRO
+                </button>
+                <button
+                  className="button__select-infos button__BTC"
+                  onClick={this.clickBTC}
+                >
+                  BTC
+                </button>
+              </div>
+              <input
+                value={this.state.searchKey}
+                onChange={this.handleChange}
+                placeholder="이름/심볼 검색"
+              ></input>
             </div>
+
             <table className="coins__table">
               <thead className="coins__thead">
                 <tr>
@@ -309,19 +328,26 @@ class CoinList extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {selectedInfo.map(info => (
-                  <Coin
-                    key={info.id}
-                    name={info.name}
-                    id={info.id}
-                    close={this.numberWithCommas(info.close)}
-                    contrast={this.numberWithCommas(info.contrast)}
-                    contrastPoint={info.contrastPoint}
-                    high={this.numberWithCommas(info.high)}
-                    low={this.numberWithCommas(info.low)}
-                    tradingValue={this.convertTradingValue(info.tradingValue)}
-                  />
-                ))}
+                {selectedInfo
+                  .filter(info => {
+                    return (
+                      info.name.includes(searchKey) ||
+                      info.id.includes(searchKey.toUpperCase())
+                    );
+                  })
+                  .map(info => (
+                    <Coin
+                      key={info.id}
+                      name={info.name}
+                      id={info.id}
+                      close={this.numberWithCommas(info.close)}
+                      contrast={this.numberWithCommas(info.contrast)}
+                      contrastPoint={info.contrastPoint}
+                      high={this.numberWithCommas(info.high)}
+                      low={this.numberWithCommas(info.low)}
+                      tradingValue={this.convertTradingValue(info.tradingValue)}
+                    />
+                  ))}
               </tbody>
             </table>
           </div>
