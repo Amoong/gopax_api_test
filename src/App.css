@@ -24,12 +24,3 @@
   min-height: 85vh;
   font-size: calc(5px + 1vmin);
 }
-
-.buttons {
-  display: flex;
-}
-
-button {
-  padding: 10px 20px;
-  margin-bottom: 20px;
-}

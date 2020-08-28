@@ -1,5 +1,6 @@
 import React from "react";
 import Coin from "./Coin";
+import "./CoinList.css";
 
 const proxyurl = "https://cors-anywhere.herokuapp.com/";
 const baseurl = "https://api.gopax.co.kr";
@@ -8,6 +9,9 @@ class CoinList extends React.Component {
   constructor() {
     super();
     this.selectInfo = this.selectInfo.bind(this);
+    this.clickKRW = this.clickKRW.bind(this);
+    this.clickPRO = this.clickPRO.bind(this);
+    this.clickBTC = this.clickBTC.bind(this);
   }
   state = {
     isNamesLoading: true,
@@ -125,6 +129,30 @@ class CoinList extends React.Component {
   selectInfo(info) {
     this.setState({ selectedInfo: info });
   }
+  clickKRW() {
+    const buttons = document.querySelectorAll(".button__select-infos");
+    buttons.forEach(button => {
+      button.classList.remove("selected");
+    });
+    document.querySelector(".button__KRW").classList.add("selected");
+    this.selectInfo(this.state.infosKRW);
+  }
+  clickPRO() {
+    const buttons = document.querySelectorAll(".button__select-infos");
+    buttons.forEach(button => {
+      button.classList.remove("selected");
+    });
+    document.querySelector(".button__PRO").classList.add("selected");
+    this.selectInfo(this.state.infosPRO);
+  }
+  clickBTC() {
+    const buttons = document.querySelectorAll(".button__select-infos");
+    buttons.forEach(button => {
+      button.classList.remove("selected");
+    });
+    document.querySelector(".button__BTC").classList.add("selected");
+    this.selectInfo(this.state.infosBTC);
+  }
   async componentDidMount() {
     this.setState(await this.getCoinNames());
     this.setState(await this.getCoinInfos());
@@ -133,14 +161,7 @@ class CoinList extends React.Component {
     this.selectInfo(this.state.infosKRW);
   }
   render() {
-    const {
-      selectedInfo,
-      isInfosLoading,
-      isNamesLoading,
-      infosKRW,
-      infosPRO,
-      infosBTC
-    } = this.state;
+    const { selectedInfo, isInfosLoading, isNamesLoading } = this.state;
 
     return (
       <div className="container">
@@ -151,20 +172,47 @@ class CoinList extends React.Component {
         ) : (
           <div className="coins">
             <div className="buttons">
-              <button onClick={() => this.selectInfo(infosKRW)}>KRW</button>
-              <button onClick={() => this.selectInfo(infosPRO)}>PRO</button>
-              <button onClick={() => this.selectInfo(infosBTC)}>BTC</button>
+              <button
+                className="button__select-infos button__KRW"
+                onClick={this.clickKRW}
+              >
+                KRW
+              </button>
+              <button
+                className="button__select-infos button__PRO"
+                onClick={this.clickPRO}
+              >
+                PRO
+              </button>
+              <button
+                className="button__select-infos button__BTC"
+                onClick={this.clickBTC}
+              >
+                BTC
+              </button>
             </div>
             <table className="coins__table">
               <thead className="coins__thead">
                 <tr>
                   <th className="th__interest"></th>
-                  <th className="th__name">이름</th>
-                  <th className="th__cur">현재가</th>
-                  <th className="th__contrast">변동</th>
-                  <th className="th__high">최고가</th>
-                  <th className="th__low">최저가</th>
-                  <th className="th__trading-value">거래대금(추정)</th>
+                  <th className="th__name">
+                    <button>이름</button>
+                  </th>
+                  <th className="th__cur">
+                    <button>현재가</button>
+                  </th>
+                  <th className="th__contrast">
+                    <button>변동</button>
+                  </th>
+                  <th className="th__high">
+                    <button>최고가</button>
+                  </th>
+                  <th className="th__low">
+                    <button>최저가</button>
+                  </th>
+                  <th className="th__trading-value">
+                    <button>거래대금</button>
+                  </th>
                 </tr>
               </thead>
               <tbody>

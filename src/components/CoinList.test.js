@@ -1,5 +1,4 @@
 import CoinList from "./CoinList";
-
 const coinList = new CoinList();
 
 // getCoinNames

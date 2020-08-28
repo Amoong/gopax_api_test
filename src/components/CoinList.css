@@ -1,0 +1,20 @@
+.buttons {
+  display: flex;
+}
+.buttons button {
+  background-color: #1d212b;
+}
+.buttons .selected {
+  background-color: black;
+}
+button {
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  color: lightgray;
+}
+button:focus {
+  outline: 0;
+}
