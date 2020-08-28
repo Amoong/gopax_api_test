@@ -232,9 +232,9 @@ class CoinList extends React.Component {
     this.setState(this.classifyCoinInfosById(this.state.infos));
     this.sortInfos(this.sortByTradingValue);
     this.clickKRW();
-    // setInterval(() => {
-    //   this.updateCoinData();
-    // }, 10000);
+    setInterval(() => {
+      this.updateCoinData();
+    }, 10000);
   }
   render() {
     const {
